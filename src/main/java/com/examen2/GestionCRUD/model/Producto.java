@@ -17,6 +17,9 @@ public class Producto {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    
+    @Column(unique = true, nullable = false)
+    private String sku;
 
     @NotBlank(message = "El nombre es obligatorio")
     @Size(min = 3, max = 100)
@@ -35,6 +38,9 @@ public class Producto {
     @Min(value = 0)
     @Column(nullable = false)
     private Integer stock;
+
+    @NotBlank(message = "La categoría es obligatoria")
+    private String categoria;
 
     @Column(name = "fecha_ingreso")
     private LocalDate fechaIngreso;
