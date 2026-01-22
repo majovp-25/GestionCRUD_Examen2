@@ -19,11 +19,11 @@ public class DataLoader implements CommandLineRunner {
     public void run(String... args) throws Exception {
         System.out.println("Iniciando limpieza automatica de la base de datos...");
         
-        // 1. LIMPIEZA TOTAL (TRUNCATE)
+        // 1. LIMPIEZA TOTAL
         // Esto evita el error de "duplicados" y reinicia los IDs a 1
         productoService.eliminarTodos(); 
         
-        System.out.println("Base de datos vacia. Cargando datos frescos... 🚀");
+        System.out.println("Base de datos vacia. Cargando datos frescos... ");
 
         // 2. CARGA DE DATOS
         cargarDatosIniciales();
