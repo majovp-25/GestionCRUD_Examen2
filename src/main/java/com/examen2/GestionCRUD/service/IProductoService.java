@@ -9,4 +9,5 @@ public interface IProductoService {
     ProductoDTO guardar(ProductoDTO productoDTO);
     ProductoDTO actualizar(Long id, ProductoDTO productoDTO);
     void eliminar(Long id);
+    void eliminarTodos();
 }

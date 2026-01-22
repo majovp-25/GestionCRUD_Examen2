@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,9 +34,16 @@ public class ProductoService implements IProductoService {
 
     @Override
     public ProductoDTO guardar(ProductoDTO dto) {
-        Producto producto = convertirAEntidad(dto); // De DTO a Entidad
-        producto = productoRepository.save(producto); // Guardamos en BD
-        return convertirADTO(producto); // Devolvemos DTO
+        Producto producto = convertirAEntidad(dto);
+
+        // LOGICA DE SKU AUTOMÁTICO (Solo si es nuevo)
+        if (producto.getId() == null) {
+            String skuGenerado = generarSkuAutomatico(dto.getCategory(), dto.getName());
+            producto.setSku(skuGenerado);
+        }
+
+        producto = productoRepository.save(producto);
+        return convertirADTO(producto);
     }
 
     @Override
@@ -66,6 +74,11 @@ public class ProductoService implements IProductoService {
         productoRepository.deleteById(id);
     }
 
+    @Override
+    public void eliminarTodos() {
+        productoRepository.vaciarTablaYReiniciarIds();
+    }
+
     // --- MÉTODOS PRIVADOS PARA MAPEO (TRADUCCIÓN) ---
     // Aquí traducimos el "Inglés de Codigo HTML" al "Español de la BD"
 
@@ -91,5 +104,37 @@ public class ProductoService implements IProductoService {
         p.setStock(dto.getStock());
         p.setCategoria(dto.getCategory());
         return p;
+    }
+
+    // --- MÉTODO PRIVADO NUEVO PARA GENERAR SKU AUTOMÁTICO ---
+private String generarSkuAutomatico(String categoria, String nombre) {
+        if (categoria == null) categoria = "GEN";
+        if (nombre == null) nombre = "PROD";
+
+        String catCode = categoria.length() >= 3 ? categoria.substring(0, 3).toUpperCase() : categoria.toUpperCase();
+        String nomCode = nombre.length() >= 3 ? nombre.substring(0, 3).toUpperCase() : nombre.toUpperCase();
+
+        // Buscamos el último producto REAL en la base de datos
+        Optional<Producto> ultimoProducto = productoRepository.findTopByCategoriaOrderByIdDesc(categoria);
+
+        long siguienteNumero = 1; // Si no hay ninguno, empezamos en 1
+
+        if (ultimoProducto.isPresent()) {
+            String ultimoSku = ultimoProducto.get().getSku();
+            // El SKU es tipo: TEC-LAP-008. Separamos por el guion "-"
+            String[] partes = ultimoSku.split("-");
+            if (partes.length == 3) {
+                try {
+                    // Tomamos la última parte ("008") y la convertimos a número
+                    long ultimoNumero = Long.parseLong(partes[2]);
+                    siguienteNumero = ultimoNumero + 1;
+                } catch (NumberFormatException e) {
+                    // Si el SKU manual tenía formato raro, usamos count como plan B
+                    siguienteNumero = productoRepository.countByCategoria(categoria) + 1; 
+                }
+            }
+        }
+
+        return catCode + "-" + nomCode + "-" + String.format("%03d", siguienteNumero);
     }
 }

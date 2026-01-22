@@ -11,6 +11,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/demoJPA/products")
+@CrossOrigin(origins = "*")
 public class ProductoController {
 
     @Autowired
@@ -57,6 +58,12 @@ public class ProductoController {
         return ResponseEntity.noContent().build();
     }
 
+    @DeleteMapping
+    public ResponseEntity<Void> eliminarTodos() {
+        productoService.eliminarTodos();
+        return ResponseEntity.noContent().build();
+    }
+
     /**
      * Validación mínima para evitar guardar registros vacíos.
      */
@@ -67,11 +74,8 @@ public class ProductoController {
         if (dto.getName() == null || dto.getName().trim().isEmpty()) {
             throw new IllegalArgumentException("El nombre es obligatorio");
         }
-        if (dto.getSku() == null || dto.getSku().trim().isEmpty()) {
-            throw new IllegalArgumentException("El SKU es obligatorio");
-        }
-        if (dto.getPrice() == null || dto.getPrice() < 0) {
-            throw new IllegalArgumentException("El precio debe ser >= 0");
+        if (dto.getPrice() == null || dto.getPrice() <= 0) {
+        throw new IllegalArgumentException("El precio debe ser mayor a 0");
         }
         if (dto.getStock() == null || dto.getStock() < 0) {
             throw new IllegalArgumentException("El stock debe ser >= 0");

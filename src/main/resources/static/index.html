@@ -154,12 +154,11 @@
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label" for="sku">
-                                    <i class="bi bi-upc-scan"></i> SKU / Código
+                              <label class="form-label" for="sku">
+                                  <i class="bi bi-upc-scan"></i> SKU / Código
                                 </label>
-                                <input type="text" class="form-control" id="sku" placeholder="Ej: AUR-BT-001" required/>
-                                <div class="form-text form-text-inline text-muted">Útil para búsquedas rápidas y control interno.</div>
-                                <div class="invalid-feedback">El SKU es obligatorio.</div>
+                              <input type="text" class="form-control bg-light" id="sku" placeholder="Se generará automáticamente (Ej: TEC-XXX-001)" disabled />
+                              <div class="form-text text-muted">El sistema asignará el código automáticamente.</div>
                             </div>
 
                             <div class="row g-2">
@@ -401,34 +400,35 @@
 
     async function createProduct(product){
       const url = `${API_BASE_URL}/products`;
-      try{
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: {'Content-Type':'application/json'},
-          body: JSON.stringify(product)
-        });
-        return response.ok;
-      }catch(err){
-        console.error(err);
-        return false;
+      // Quitamos el try/catch aquí para manejarlo en el botón guardar
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify(product)
+      });
+
+      if(!response.ok){
+         // Aquí leemos el mensaje del GlobalException (ApiError)
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Error desconocido al crear producto');
       }
+      return true;
     }
 
     async function updateProduct(id, product){
       const url = `${API_BASE_URL}/products/${id}`;
-      try{
-        const response = await fetch(url, {
-          method: 'PATCH',
-          headers: {'Content-Type':'application/json'},
-          body: JSON.stringify(product)
-        });
-        return response.ok;
-      }catch(err){
-        console.error(err);
-        return false;
-      }
-    }
+      const response = await fetch(url, {
+        method: 'PATCH', 
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify(product)
+      });
 
+      if(!response.ok){
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Error desconocido al actualizar producto');
+      }
+      return true;
+    }
     async function deleteProduct(id){
       const url = `${API_BASE_URL}/products/${id}`;
       try{
@@ -611,27 +611,31 @@
 
       const product = {
         name: document.getElementById('name').value.trim(),
-        sku: document.getElementById('sku').value.trim(),
+        sku: document.getElementById('sku').value.trim(), // Tu backend lo ignorará si es crear
         price: Number(document.getElementById('price').value),
         stock: Number(document.getElementById('stock').value),
         category: document.getElementById('category').value,
         description: document.getElementById('description').value.trim() || null
       };
 
-      let ok = false;
-
-      if(id){
-        ok = await updateProduct(id, product);
-      }else{
-        ok = await createProduct(product);
-      }
-
-      if(ok){
-        showAlert('success', id ? 'Producto actualizado correctamente.' : 'Producto creado correctamente.');
+      try {
+        // Ahora usamos try/catch para atrapar el mensaje del backend
+        if(id){
+          await updateProduct(id, product);
+          showAlert('success', 'Producto actualizado correctamente.');
+        } else {
+          await createProduct(product);
+          showAlert('success', 'Producto creado correctamente.');
+        }
+        
+        // Si todo sale bien:
         resetForm();
         await loadProducts();
-      }else{
-        showAlert('danger', 'Error al guardar. Verifica el endpoint y el JSON enviado.');
+
+      } catch (error) {
+        console.error(error);
+        // Si hay error, mostramos el mensaje exacto del backend en rojo
+        showAlert('danger', error.message);
       }
     });
 
