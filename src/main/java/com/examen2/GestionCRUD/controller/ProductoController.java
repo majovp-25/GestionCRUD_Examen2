@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
@@ -53,9 +54,9 @@ public class ProductoController {
 
     // DELETE /demoJPA/products/{id}
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+    public ResponseEntity<String> eliminar(@PathVariable Long id) {
         productoService.eliminar(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok("Producto eliminado correctamente ");
     }
 
     @DeleteMapping
