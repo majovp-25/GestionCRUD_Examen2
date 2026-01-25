@@ -65,6 +65,35 @@ public class ProductoController {
         return ResponseEntity.noContent().build();
     }
 
+    // Endpoint oculto para cargar 60 datos masivos manualmente
+    // URL: http://localhost:8080/demoJPA/products/cargar-datos
+    @PostMapping("/cargar-datos") 
+    public ResponseEntity<String> cargarDatosPrueba() {
+        
+        // Creamos un bucle que se repita 60 veces
+        for (int i = 1; i <= 60; i++) {
+            ProductoDTO p = new ProductoDTO();
+            
+            // Usamos lógica matemática simple para variar los datos
+            p.setName("Producto Generado " + i);
+            
+            // SKUs únicos usando el tiempo del sistema para evitar errores de duplicados
+            p.setSku("GEN-" + i + "-" + System.currentTimeMillis()); 
+            
+            p.setPrice(10.0 + (i * 2)); // El precio sube de 2 en 2
+            p.setStock(50 + i);         // El stock varía
+            
+            // Alternamos categorías: Pares = Tecnología, Impares = Hogar
+            p.setCategory(i % 2 == 0 ? "Tecnología" : "Hogar");
+            
+            p.setDescription("Descripción automática para el item número " + i);
+
+            // Guardamos cada uno en la base de datos
+            productoService.guardar(p);
+        }
+
+        return ResponseEntity.ok("Éxito! Se han agregado 60 productos nuevos al inventario");
+    }
     /**
      * Validación mínima para evitar guardar registros vacíos.
      */
