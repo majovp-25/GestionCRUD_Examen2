@@ -79,6 +79,11 @@ public class ProductoService implements IProductoService {
         productoRepository.vaciarTablaYReiniciarIds();
     }
 
+    @Override
+    public void eliminarTodo() {
+        productoRepository.deleteAll();
+    }
+
     // --- MÉTODOS PRIVADOS PARA MAPEO (TRADUCCIÓN) ---
     // Aquí traducimos el "Inglés de Codigo HTML" al "Español de la BD"
 

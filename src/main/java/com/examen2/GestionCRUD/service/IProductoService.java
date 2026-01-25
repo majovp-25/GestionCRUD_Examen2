@@ -10,4 +10,5 @@ public interface IProductoService {
     ProductoDTO actualizar(Long id, ProductoDTO productoDTO);
     void eliminar(Long id);
     void eliminarTodos();
+    void eliminarTodo();
 }
