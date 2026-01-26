@@ -73,7 +73,7 @@ public class ProductoController {
     @PostMapping("/cargar-datos")
     public ResponseEntity<String> cargarDatosReales() {
         
-        // 1. LISTA DE PRODUCTOS REALES (Tus datos originales)
+        // 1. LISTA DE PRODUCTOS REALES
         List<ProductoDTO> destacados = Arrays.asList(
             // TECNOLOGÍA
             crearProducto("Laptop Gamer Dell", "TEC-DELL-001", "Ryzen 7, 16GB RAM, RTX 3060", 1200.00, 5, "Tecnología"),
